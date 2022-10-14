@@ -7,8 +7,8 @@
 
             <main>
                 <% if (prods.length > 0) { %>
-                    <div>
-                        <table border="1">
+                    <div class="margin-center centered">
+                        <table border="1" class="margin-center">
                             <tbody>
                                 <tr>
                                     <td>Username</td>
@@ -22,8 +22,9 @@
                                     <% } %>
                             </tbody>
                         </table>
-                        <a href="/users/list">Download Active User</a>
+                        <a style="display: inline-block"  href="/users/list">Download Active Users</a>
                     </div>
+                    <%- include('../includes/pagination.ejs', {currentPage: currentPage, nextPage: nextPage, previousPage: previousPage, lastPage: lastPage, hasNextPage: hasNextPage, hasPreviousPage: hasPreviousPage}) %>
                     <% } else { %>
                         <h1>No Users Found!</h1>
                         <% } %>

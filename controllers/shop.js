@@ -4,13 +4,31 @@ const User = require("../models/userList");
 
 const PDFDoc = require("pdfkit-table");
 
+const ITEMS_PER_PAGE = 1;
+
 exports.getUsers = (req, res, next) => {
+  const page = +req.query.page || 1;
+  let totalItems;
+
   User.find()
+    .countDocuments()
+    .then((numUsers) => {
+      totalItems = numUsers;
+      return User.find()
+        .skip((page - 1) * ITEMS_PER_PAGE)
+        .limit(ITEMS_PER_PAGE);
+    })
     .then((users) => {
       res.render("shop/product-list", {
         prods: users,
-        pageTitle: "All Users",
+        pageTitle: "Active Users",
         path: "/users",
+        currentPage: page,
+        hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+        hasPreviousPage: page > 1,
+        nextPage: page + 1,
+        previousPage: page - 1,
+        lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
       });
     })
     .catch((err) => {
@@ -39,12 +57,28 @@ exports.getUser = (req, res, next) => {
 };
 
 exports.getIndex = (req, res, next) => {
+  const page = +req.query.page || 1;
+  let totalItems;
+
   User.find()
+    .countDocuments()
+    .then((numUsers) => {
+      totalItems = numUsers;
+      return User.find()
+        .skip((page - 1) * ITEMS_PER_PAGE)
+        .limit(ITEMS_PER_PAGE);
+    })
     .then((users) => {
       res.render("shop/index", {
         prods: users,
         pageTitle: "List of Users",
         path: "/",
+        currentPage: page,
+        hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+        hasPreviousPage: page > 1,
+        nextPage: page + 1,
+        previousPage: page - 1,
+        lastPage: Math.ceil(totalItems / ITEMS_PER_PAGE),
       });
     })
     .catch((err) => {
