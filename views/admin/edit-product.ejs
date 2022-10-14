@@ -1,0 +1,29 @@
+<%- include('../includes/head.ejs') %>
+    <link rel="stylesheet" href="/css/forms.css">
+    <link rel="stylesheet" href="/css/product.css">
+</head>
+
+<body>
+   <%- include('../includes/navigation.ejs') %>
+
+    <main>
+        <% if (errorMessage) { %>
+            <div class="user-message user-message--error"><%= errorMessage %></div>
+        <% } %>
+        <form class="product-form" action="/admin/<% if (editing) { %>edit-product<% } else { %>add-users<% } %>" method="POST">
+            <div class="form-control">
+                <label for="name">Enter User name</label>
+                <input type="text" class="<%= validationErrors.find(e => e.param === 'name') ? 'invalid' : ''%>" name="name" id="name" value="<% if (editing || hasError) { %><%= product.name %><% } %>">
+            </div>
+            <div class="form-control">
+                <label for="price">Age</label>
+                <input type="number" class="<%= validationErrors.find(e => e.param === 'age') ? 'invalid' : ''%>" name="age" id="age" step="0.01" value="<% if (editing || hasError) { %><%= product.age %><% } %>">
+            </div>
+            <% if (editing) { %>
+                <input type="hidden" value="<%= product.id %>" name="productId">
+            <% } %>
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn" type="submit"><% if (editing) { %>Update User<% } else { %>Add User <% } %></button>
+        </form>
+    </main>
+<%- include('../includes/end.ejs') %>
