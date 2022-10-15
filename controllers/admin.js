@@ -1,4 +1,3 @@
-const mongoose = require("mongoose");
 const { validationResult } = require("express-validator");
 
 const User = require("../models/userList");
@@ -38,7 +37,6 @@ exports.postAddUser = (req, res, next) => {
   const user = new User({
     name: name,
     age: age,
-    userId: req.user,
   });
 
   user
@@ -109,7 +107,7 @@ exports.postEditUser = (req, res, next) => {
 
   User.findById(prodId)
     .then((user) => {
-      if (user.userId.toString() !== req.user._id.toString()) {
+      if (!user) {
         return res.redirect("/");
       }
 
@@ -129,7 +127,7 @@ exports.postEditUser = (req, res, next) => {
 };
 
 exports.getUsers = (req, res, next) => {
-  User.find({ userId: req.user._id })
+  User.find()
     .then((users) => {
       console.log(users);
       res.render("admin/products", {
@@ -148,7 +146,7 @@ exports.getUsers = (req, res, next) => {
 exports.postDeleteUser = (req, res, next) => {
   const prodId = req.body.productId;
 
-  User.deleteOne({ _id: prodId, userId: req.user._id })
+  User.deleteOne({ _id: prodId })
     .then(() => {
       console.log("REMOVED USER");
       res.redirect("/admin/users");

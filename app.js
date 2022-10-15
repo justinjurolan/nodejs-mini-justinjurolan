@@ -1,29 +1,17 @@
 const path = require("path");
-
 const express = require("express");
-const cors = require("cors");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-const session = require("express-session");
-const MongoDBStore = require("connect-mongodb-session")(session);
-const csrf = require("csurf");
-const flash = require("connect-flash");
+
+const cookieParser = require("cookie-parser");
+const { checkUser } = require("./util/is-auth");
 
 const errorController = require("./controllers/error");
-const User = require("./models/user");
 
 const MONGODB_URI =
   "mongodb+srv://justinjurolan:justinjurolan@cluster0.1b8n6ui.mongodb.net/users?retryWrites=true&w=majority";
 
 const app = express();
-
-app.use(cors());
-
-const store = new MongoDBStore({
-  uri: MONGODB_URI,
-  collection: "sessions",
-});
-const csrfProtection = csrf();
 
 app.set("view engine", "ejs");
 app.set("views", "views");
@@ -32,58 +20,37 @@ const adminRoutes = require("./routes/admin");
 const userRoutes = require("./routes/shop");
 const authRoutes = require("./routes/auth");
 
+app.use(express.json());
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
-app.use(
-  session({
-    secret: "my secret",
-    resave: false,
-    saveUninitialized: false,
-    store: store,
-  })
-);
-
-app.use(csrfProtection);
-app.use(flash());
 
 app.use((req, res, next) => {
-  res.locals.isAuthenticated = req.session.isLoggedIn;
-  res.locals.csrfToken = req.csrfToken();
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "OPTIONS, GET, POST, PUT, PATCH, DELETE"
+  );
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
 });
 
-app.use((req, res, next) => {
-  if (!req.session.user) {
-    return next();
-  }
-  User.findById(req.session.user._id)
-    .then((user) => {
-      if (!user) {
-        return next();
-      }
-      req.user = user;
-      next();
-    })
-    .catch((err) => {
-      next(new Error(err));
-    });
-});
-
+app.get("*", checkUser);
+app.post("*", checkUser);
 app.use("/admin", adminRoutes);
 app.use(userRoutes);
 app.use(authRoutes);
 
-app.get("/500", errorController.get500);
+// app.get("/500", errorController.get500);
 
 app.use(errorController.get404);
 
-app.use((error, req, res, next) => {
-  res.status(500).render("500", {
-    pageTitle: "Error!",
-    path: "/500",
-    isAuthenticated: req.session.isLoggedIn,
-  });
-});
+// app.use((error, req, res, next) => {
+//   res.status(500).render("500", {
+//     pageTitle: "Error!",
+//     path: "/500",
+//   });
+// });
 
 mongoose
   .connect(MONGODB_URI)
@@ -94,8 +61,3 @@ mongoose
   .catch((err) => {
     console.log(err);
   });
-
-/* 
-Mini Task 10
-* Error Handling to all routes
-*/

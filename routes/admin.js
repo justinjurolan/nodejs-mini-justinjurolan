@@ -4,33 +4,37 @@ const express = require("express");
 const { body } = require("express-validator");
 
 const adminController = require("../controllers/admin");
-const isAuth = require("../util/is-auth");
+const { validateToken } = require("../util/is-auth");
 
 const router = express.Router();
 
 // /admin/add-user => GET
-router.get("/add-users", isAuth, adminController.getAddUser);
+router.get("/add-users", validateToken, adminController.getAddUser);
 
 // /admin/users => GET
-router.get("/users", isAuth, adminController.getUsers);
+router.get("/users", validateToken, adminController.getUsers);
 
 // /admin/add-user => POST
 router.post(
   "/add-users",
   [body("name").isString().trim(), body("age").isInt().trim()],
-  isAuth,
+  validateToken,
   adminController.postAddUser
 );
 
-router.get("/edit-product/:productId", isAuth, adminController.getEditUser);
+router.get(
+  "/edit-product/:productId",
+  validateToken,
+  adminController.getEditUser
+);
 
 router.post(
   "/edit-product",
   [body("name").isString().trim(), body("age").isInt().trim()],
-  isAuth,
+  validateToken,
   adminController.postEditUser
 );
 
-router.post("/delete-product", isAuth, adminController.postDeleteUser);
+router.post("/delete-product", validateToken, adminController.postDeleteUser);
 
 module.exports = router;
